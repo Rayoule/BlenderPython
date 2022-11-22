@@ -1,0 +1,49 @@
+# This example assumes we have a mesh object selected
+
+import bpy
+import bmesh
+
+# Get the active mesh
+me = bpy.context.object.data
+
+while len(me.uv_layers) < 3 :
+    bpy.ops.mesh.uv_texture_add()
+
+
+# Get a BMesh representation
+bm = bmesh.new()   # create an empty BMesh
+bm.from_mesh(me)   # fill it in from a Mesh
+
+# Get layers
+bm_layers = bm.loops.layers
+
+uv_lay = bm_layers.uv.active
+col_lay = bm_layers.color.active
+
+
+# Modify the BMesh, can do anything here...
+initial_uv_lay = bm_layers.uv[0]
+second_uv_lay = bm_layers.uv[1]
+third_uv_lay = bm_layers.uv[2]
+    
+for face in bm.faces:
+    for loop in face.loops:
+        
+        col = loop[col_lay]
+        
+        new_uv1 = (col[0], col[1])
+        new_uv2 = (col[2], 0.0)
+        
+        loop[second_uv_lay].uv = new_uv1
+        loop[third_uv_lay].uv = new_uv2
+        
+        uv1 = loop[second_uv_lay].uv
+        uv2 = loop[third_uv_lay].uv
+        
+        print("Loop UV1: %f, %f" % uv1[:])
+        print("Loop UV2: %f, %f" % uv2[:])
+
+    
+# Finish up, write the bmesh back to the mesh
+bm.to_mesh(me)
+bm.free()  # free and prevent further access
